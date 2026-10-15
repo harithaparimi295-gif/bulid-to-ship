@@ -1,0 +1,9 @@
+# Backend Specific Git Ignore
+.env
+.env.*
+!.env.example
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log

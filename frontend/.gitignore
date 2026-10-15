@@ -1,0 +1,6 @@
+# Frontend Specific Git Ignore
+.env
+.env.*
+!.env.example
+node_modules/
+*.log

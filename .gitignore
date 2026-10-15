@@ -1,0 +1,90 @@
+# ============================================================
+# Environment & Sensitive Credentials (CRITICAL - DO NOT COMMIT)
+# ============================================================
+# Ignore all .env files containing API keys and secrets
+.env
+.env.local
+.env.*.local
+*.env
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
+
+# Keep .env.example files as templates for other developers
+!.env.example
+!backend/.env.example
+!frontend/.env.example
+
+# Private certificates and keys
+*.pem
+*.key
+*.cert
+*.pfx
+
+# ============================================================
+# Node.js & Dependencies
+# ============================================================
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+.pnp
+.pnp.js
+
+# NPM, Yarn & PNPM Debug Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ============================================================
+# Operating System Files
+# ============================================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ============================================================
+# IDEs & Code Editors
+# ============================================================
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*~
+
+# ============================================================
+# Logs, Temporary & Cache Files
+# ============================================================
+logs/
+*.log
+*.pid
+*.seed
+*.pid.lock
+tmp/
+temp/
+scratch/
+.cache/
+.parcel-cache/
+
+# AntiGravity / Gemini Internal Artifacts
+.system_generated/
+.agents/
+.gemini/

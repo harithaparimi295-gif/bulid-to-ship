@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini AI Chatbot | Next-Gen Intelligent Assistant</title>
+  <meta name="description" content="A modern, high-performance AI Chatbot powered by Google Gemini LLM and Supabase cloud persistence with full-stack separated frontend and backend.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Supabase Official JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Markdown & Code Highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow effects -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- App Wrapper -->
+  <div class="app-layout">
+
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-badge">
+          <div class="logo-icon-wrap">
+            <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="url(#sparkleGradient)" stroke="none"/>
+              <defs>
+                <linearGradient id="sparkleGradient" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#38bdf8"/>
+                  <stop offset="0.5" stop-color="#818cf8"/>
+                  <stop offset="1" stop-color="#c084fc"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="brand-info">
+            <span class="brand-title">Gemini <span class="brand-gradient">Chat</span></span>
+            <span class="brand-subtitle">Google GenAI + Supabase</span>
+          </div>
+        </div>
+
+        <!-- Connection & API Key Status Indicator -->
+        <div id="statusIndicator" class="status-pill status-checking" title="Connecting to backend...">
+          <span class="status-dot"></span>
+          <span class="status-text">Checking server...</span>
+        </div>
+
+        <!-- Supabase Cloud Sync Status Indicator -->
+        <div id="supabaseIndicator" class="status-pill status-supabase-off" title="Supabase Cloud Database Status">
+          <svg class="supabase-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21.362 9.354H12V.304a.3.3 0 0 0-.535-.187L.6 13.916a.3.3 0 0 0 .235.484H12v9.05a.3.3 0 0 0 .535.187l10.865-13.8a.3.3 0 0 0-.038-.483z"/>
+          </svg>
+          <span class="status-text">Cloud Sync: Off</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Model Selector -->
+        <div class="model-picker-wrap">
+          <label for="modelSelect" class="sr-only">Choose Model</label>
+          <div class="select-styled-container">
+            <svg class="picker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+            <select id="modelSelect" class="model-dropdown">
+              <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (Recommended)</option>
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+              <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Saved Conversations Drawer Toggle -->
+        <button id="openConversationsBtn" class="icon-btn" title="Cloud Conversations" aria-label="Cloud Conversations">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span id="conversationsCount" class="badge-count hidden">0</span>
+        </button>
+
+        <!-- New Chat Button -->
+        <button id="newChatBtn" class="icon-btn" title="New Chat" aria-label="New Chat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+
+        <!-- Clear Chat Button -->
+        <button id="clearChatBtn" class="icon-btn" title="Clear Current View" aria-label="Clear View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/>
+          </svg>
+        </button>
+
+        <!-- Export Chat -->
+        <button id="exportChatBtn" class="icon-btn" title="Export Conversation" aria-label="Export Conversation">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+        </button>
+
+        <!-- Settings Button -->
+        <button id="openSettingsBtn" class="icon-btn highlight-btn" title="Settings & API Key" aria-label="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+          <span class="settings-notify-badge hidden" id="settingsBadge">!</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Banner for Missing API Key or Server Disconnected -->
+    <div id="alertBanner" class="alert-banner hidden">
+      <div class="alert-content">
+        <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span id="alertMessage">Gemini API Key is required. Please set it in backend/.env or configure it in Settings.</span>
+      </div>
+      <div class="alert-actions">
+        <button id="bannerActionBtn" class="alert-action-btn">Configure Key</button>
+        <button id="dismissAlertBtn" class="alert-close-btn" aria-label="Close notification">&times;</button>
+      </div>
+    </div>
+
+    <!-- Main Chat Container -->
+    <main class="chat-viewport">
+      <div id="messagesContainer" class="messages-container">
+        
+        <!-- Welcome Screen (Shows when no messages exist) -->
+        <div id="welcomeScreen" class="welcome-screen">
+          <div class="hero-sparkle-card">
+            <div class="hero-icon-pulse">
+              <svg viewBox="0 0 24 24" fill="none" class="hero-sparkle-svg">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="url(#heroGrad)"/>
+                <defs>
+                  <linearGradient id="heroGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#38bdf8"/>
+                    <stop offset="0.5" stop-color="#818cf8"/>
+                    <stop offset="1" stop-color="#c084fc"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <h1 class="hero-title">Experience the Power of Gemini</h1>
+            <p class="hero-desc">Ask questions, write clean code, brainstorm ideas, or analyze text in real-time with Google's advanced multimodal LLM backed by Supabase cloud storage.</p>
+          </div>
+
+          <!-- Suggested Starter Prompts -->
+          <div class="suggestions-header">
+            <span>Try these starting prompts</span>
+          </div>
+          <div class="suggestions-grid">
+            <button class="suggestion-card" data-prompt="Explain quantum computing in simple terms with an everyday analogy.">
+              <span class="suggestion-icon">⚡</span>
+              <div class="suggestion-text">
+                <strong>Explain Quantum Computing</strong>
+                <span>Break it down with an intuitive real-world analogy</span>
+              </div>
+            </button>
+
+            <button class="suggestion-card" data-prompt="Write a clean Node.js script using Express that implements rate limiting.">
+              <span class="suggestion-icon">💻</span>
+              <div class="suggestion-text">
+                <strong>Node.js Express Rate Limiter</strong>
+                <span>Generate secure, production-ready middleware</span>
+              </div>
+            </button>
+
+            <button class="suggestion-card" data-prompt="Give me 5 creative productivity techniques beyond Pomodoro.">
+              <span class="suggestion-icon">💡</span>
+              <div class="suggestion-text">
+                <strong>Creative Productivity Systems</strong>
+                <span>Discover science-backed focus frameworks</span>
+              </div>
+            </button>
+
+            <button class="suggestion-card" data-prompt="Help me draft a concise, compelling cold outreach email for a software developer role.">
+              <span class="suggestion-icon">✉️</span>
+              <div class="suggestion-text">
+                <strong>Craft Outreach Email</strong>
+                <span>Professional message tailored for engineering roles</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat messages will be dynamically injected here -->
+
+      </div>
+
+      <!-- Scroll to bottom button -->
+      <button id="scrollToBottomBtn" class="scroll-bottom-btn hidden" aria-label="Scroll to bottom">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+        </svg>
+      </button>
+    </main>
+
+    <!-- Bottom Message Input Section -->
+    <footer class="chat-input-wrapper">
+      <div class="input-container">
+        
+        <!-- Quick Prompts Pill Bar -->
+        <div class="quick-chips-bar" id="quickChipsBar">
+          <button class="chip-btn" data-text="Summarize this text: ">📝 Summarize</button>
+          <button class="chip-btn" data-text="Explain the step-by-step logic of: ">🧠 Explain Step-by-Step</button>
+          <button class="chip-btn" data-text="Write unit tests for this code: ">🧪 Write Unit Tests</button>
+          <button class="chip-btn" data-text="Refactor and optimize: ">⚡ Refactor Code</button>
+        </div>
+
+        <form id="chatForm" class="chat-form">
+          <div class="input-field-box">
+            <textarea
+              id="userInput"
+              class="chat-textarea"
+              placeholder="Ask Gemini anything... (Shift + Enter for new line)"
+              rows="1"
+              required
+            ></textarea>
+
+            <div class="input-actions-inner">
+              <button type="button" id="voiceToggleBtn" class="input-icon-btn" title="Text-to-speech read-aloud toggle">
+                <svg id="voiceIconMuted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/>
+                </svg>
+                <svg id="voiceIconActive" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/>
+                </svg>
+              </button>
+
+              <button type="button" id="stopBtn" class="stop-btn hidden" title="Stop generating">
+                <span class="stop-square"></span>
+                <span>Stop</span>
+              </button>
+
+              <button type="submit" id="sendBtn" class="send-btn" title="Send Message (Enter)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div class="input-footer-note">
+          <span id="activeConversationTitle">New Session (Local)</span> &bull; <span>Gemini LLM &bull; Supabase Database</span>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Cloud Conversations Drawer -->
+  <div id="conversationsDrawer" class="drawer-backdrop hidden">
+    <div class="drawer-card">
+      <div class="drawer-header">
+        <div class="drawer-title-group">
+          <svg class="drawer-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21.362 9.354H12V.304a.3.3 0 0 0-.535-.187L.6 13.916a.3.3 0 0 0 .235.484H12v9.05a.3.3 0 0 0 .535.187l10.865-13.8a.3.3 0 0 0-.038-.483z"/>
+          </svg>
+          <h3>Cloud Conversations</h3>
+        </div>
+        <button id="closeDrawerBtn" class="drawer-close-btn" aria-label="Close drawer">&times;</button>
+      </div>
+
+      <div class="drawer-toolbar">
+        <button id="drawerNewChatBtn" class="btn-primary-small">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>New Cloud Chat</span>
+        </button>
+        <button id="refreshConversationsBtn" class="btn-secondary-small" title="Refresh list">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="conversationsList" class="conversations-list">
+        <div class="drawer-loading">Loading conversations...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal Drawer -->
+  <div id="settingsModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+            </svg>
+          </div>
+          <h3>Chatbot Configuration</h3>
+        </div>
+        <button id="closeSettingsBtn" class="modal-close-btn" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Section Header: Gemini API -->
+        <div class="section-title">
+          <span>Google Gemini API</span>
+        </div>
+
+        <!-- Gemini API Key Field -->
+        <div class="form-group">
+          <label for="apiKeyInput" class="form-label">
+            <span>Gemini API Key</span>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="link-small">Get Key (Free) &nearr;</a>
+          </label>
+          <div class="input-password-wrap">
+            <input
+              type="password"
+              id="apiKeyInput"
+              class="form-input"
+              placeholder="Paste your AIzaSy... key (or use backend/.env)"
+              autocomplete="off"
+            >
+            <button type="button" id="toggleApiKeyVisibility" class="visibility-btn" aria-label="Toggle Key Visibility">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <p class="form-hint">
+            Saved in your browser or automatically loaded from <code>backend/.env</code>.
+          </p>
+        </div>
+
+        <!-- Section Header: Supabase Cloud Database -->
+        <div class="section-title">
+          <span>Supabase Cloud Database</span>
+          <a href="https://supabase.com/dashboard" target="_blank" rel="noopener" class="link-small">Dashboard &nearr;</a>
+        </div>
+
+        <!-- Supabase Project URL -->
+        <div class="form-group">
+          <label for="supabaseUrlInput" class="form-label">
+            <span>Supabase Project URL</span>
+          </label>
+          <input
+            type="text"
+            id="supabaseUrlInput"
+            class="form-input"
+            placeholder="https://your-project-id.supabase.co"
+          >
+          <p class="form-hint">Find this under: Project Settings &rarr; API &rarr; Project URL</p>
+        </div>
+
+        <!-- Supabase Anon Key -->
+        <div class="form-group">
+          <label for="supabaseAnonKeyInput" class="form-label">
+            <span>Supabase Anon Public Key</span>
+          </label>
+          <div class="input-password-wrap">
+            <input
+              type="password"
+              id="supabaseAnonKeyInput"
+              class="form-input"
+              placeholder="eyJhbGciOiJIUzI1NiIsInR5c..."
+              autocomplete="off"
+            >
+            <button type="button" id="toggleSupabaseKeyVisibility" class="visibility-btn" aria-label="Toggle Supabase Key Visibility">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <p class="form-hint">
+            Database tables can be created using <code>backend/supabase-schema.sql</code>.
+          </p>
+        </div>
+
+        <div class="supabase-test-row">
+          <button type="button" id="testSupabaseBtn" class="btn-secondary-small">Test Supabase Connection</button>
+          <span id="supabaseTestStatus" class="supabase-test-feedback"></span>
+        </div>
+
+        <!-- Section Header: Persona & System Instructions -->
+        <div class="section-title">
+          <span>System Persona & Instructions</span>
+        </div>
+
+        <div class="form-group">
+          <textarea
+            id="systemPromptInput"
+            class="form-textarea"
+            rows="3"
+            placeholder="e.g. You are an expert senior full-stack engineer and tech educator. Provide clear, concise answers with high quality code samples."
+          ></textarea>
+        </div>
+
+        <!-- Quick System Prompt Presets -->
+        <div class="presets-row">
+          <span class="presets-label">Presets:</span>
+          <button class="preset-tag" data-prompt="You are an expert software engineer. Provide concise, clean, secure code examples with clear explanations.">Expert Coder</button>
+          <button class="preset-tag" data-prompt="You are a warm, knowledgeable teacher. Explain concepts step by step with easy analogies.">Tutor</button>
+          <button class="preset-tag" data-prompt="You are a professional copywriter and business communicator. Write concise, persuasive, and polished copy.">Copywriter</button>
+          <button class="preset-tag" data-prompt="">Default Assistant</button>
+        </div>
+
+        <!-- Streaming Toggle -->
+        <div class="form-group toggle-group">
+          <div>
+            <div class="toggle-title">Real-Time Streaming</div>
+            <div class="toggle-subtitle">Stream tokens incrementally via Server-Sent Events</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="streamToggle" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button id="resetSettingsBtn" class="btn-secondary">Reset Defaults</button>
+        <button id="saveSettingsBtn" class="btn-primary">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

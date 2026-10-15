@@ -1,0 +1,11 @@
+{
+  "name": "gemini-chatbot-fullstack",
+  "version": "1.0.0",
+  "description": "Full-Stack Gemini Chatbot with Supabase Integration",
+  "scripts": {
+    "start": "cd backend && npm start",
+    "dev": "cd backend && npm run dev",
+    "db:setup": "cd backend && npm run db:setup",
+    "db:push": "npx supabase db push"
+  }
+}
